@@ -72,7 +72,7 @@ npm run dev
 {
   "prompt": "текст запроса",
   "url": "https://example.com (опционально)",
-  "textModel": "qwen/qwen3-32b (опционально)",
+  "textModel": "qwen/qwen3.8-27b (опционально)",
   "imageEngine": "pollinations_flux | google_imagen (опционально)"
 }
 ```
