@@ -57,6 +57,8 @@ GEMINI_API_KEY=your_gemini_api_key_here
 
 На Vercel добавьте те же переменные в **Project Settings → Environment Variables**.
 
+> **Важно про квоты Nano Banana:** бесплатный тариф Google AI Studio по умолчанию даёт **нулевую квоту** на генерацию изображений (`generativelanguage.googleapis.com`, модели `gemini-2.5-flash-image` и т.п.) — запрос вернёт `429 RESOURCE_EXHAUSTED, limit: 0`. Чтобы включить генерацию изображений, привяжите платёжный аккаунт (billing) к проекту в [Google AI Studio](https://aistudio.google.com/) / Google Cloud Console. Пока биллинг не включён — используйте движок **FLUX (Pollinations AI)**, он бесплатный и не требует ключей.
+
 ## Запуск локально
 
 ```bash

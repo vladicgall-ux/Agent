@@ -140,15 +140,27 @@ async function resolveGeneratedImageUrl(outputImage) {
 async function handleImagenGeneration(imagePromptEnglish) {
   const gemini = getGeminiClient();
 
-  const interaction = await gemini.interactions.create({
-    model: IMAGE_MODEL,
-    input: imagePromptEnglish,
-    response_format: {
-      type: "image",
-      mime_type: "image/jpeg",
-      aspect_ratio: "1:1",
-    },
-  });
+  let interaction;
+  try {
+    interaction = await gemini.interactions.create({
+      model: IMAGE_MODEL,
+      input: imagePromptEnglish,
+      response_format: {
+        type: "image",
+        mime_type: "image/jpeg",
+        aspect_ratio: "1:1",
+      },
+    });
+  } catch (error) {
+    const status = error?.status || error?.response?.status;
+    const message = error?.message || "";
+    if (status === 429 || /quota|RESOURCE_EXHAUSTED/i.test(message)) {
+      throw new Error(
+        `У вашего GEMINI_API_KEY нулевая квота на генерацию изображений моделью ${IMAGE_MODEL} (бесплатный тариф Google AI Studio её не включает). Включите платный тариф/биллинг для проекта в Google AI Studio, либо переключитесь на движок FLUX (Pollinations AI) — он работает без ключа.`
+      );
+    }
+    throw error;
+  }
 
   const outputImage = interaction?.output_image;
 
