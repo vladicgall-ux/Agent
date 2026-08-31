@@ -111,6 +111,32 @@ async function handleFluxGeneration(imagePromptEnglish) {
   });
 }
 
+async function resolveGeneratedImageUrl(outputImage) {
+  const mimeType = outputImage.mime_type || "image/jpeg";
+
+  if (outputImage.data) {
+    return `data:${mimeType};base64,${outputImage.data}`;
+  }
+
+  if (outputImage.uri) {
+    try {
+      const res = await fetch(outputImage.uri, {
+        headers: { "x-goog-api-key": process.env.GEMINI_API_KEY },
+      });
+      if (res.ok) {
+        const buffer = Buffer.from(await res.arrayBuffer());
+        const contentType = res.headers.get("content-type") || mimeType;
+        return `data:${contentType};base64,${buffer.toString("base64")}`;
+      }
+    } catch {
+      // fall through to returning the raw URI below
+    }
+    return outputImage.uri;
+  }
+
+  return null;
+}
+
 async function handleImagenGeneration(imagePromptEnglish) {
   const gemini = getGeminiClient();
 
@@ -121,18 +147,20 @@ async function handleImagenGeneration(imagePromptEnglish) {
       type: "image",
       mime_type: "image/jpeg",
       aspect_ratio: "1:1",
-      delivery: "inline",
     },
   });
 
   const outputImage = interaction?.output_image;
 
-  if (!outputImage?.data) {
+  if (!outputImage?.data && !outputImage?.uri) {
     throw new Error("Gemini (Nano Banana) не вернул изображение.");
   }
 
-  const mimeType = outputImage.mime_type || "image/jpeg";
-  const imageUrl = `data:${mimeType};base64,${outputImage.data}`;
+  const imageUrl = await resolveGeneratedImageUrl(outputImage);
+
+  if (!imageUrl) {
+    throw new Error("Gemini (Nano Banana) не вернул изображение.");
+  }
 
   return NextResponse.json({
     type: "generated_image",
