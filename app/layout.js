@@ -3,7 +3,7 @@ import "./globals.css";
 export const metadata = {
   title: "AI Agent — Groq + Gemini",
   description:
-    "Универсальный AI-агент: текстовые ответы через Groq, генерация изображений через Google Imagen и парсинг веб-страниц.",
+    "Универсальный AI-агент: текстовые ответы через Groq, генерация изображений через FLUX и Google Nano Banana, и парсинг веб-страниц.",
 };
 
 export default function RootLayout({ children }) {

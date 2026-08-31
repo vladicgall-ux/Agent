@@ -1,9 +1,9 @@
-# AI Agent — Next.js + Groq + FLUX / Google Imagen
+# AI Agent — Next.js + Groq + FLUX / Google Nano Banana
 
 Гибридный AI-агент на Next.js (App Router) с тремя режимами работы:
 
 1. **Текстовые ответы** — через Groq API (выбор из нескольких моделей).
-2. **Генерация изображений** — автоматическое определение намерения пользователя, с выбором движка: **FLUX (Pollinations AI, бесплатно, без ключа)** или **Google Imagen 3** через `@google/genai`.
+2. **Генерация изображений** — автоматическое определение намерения пользователя, с выбором движка: **FLUX (Pollinations AI, бесплатно, без ключа)** или **Google Nano Banana** (`gemini-2.5-flash-image`) через `@google/genai`.
 3. **Анализ веб-страниц** — парсинг HTML-страницы по ссылке (`cheerio`), извлечение текста и фотографий, и ответ модели на основе содержимого страницы.
 4. **Пакетная выгрузка в ZIP** — для результата парсинга страницы можно скачать все найденные изображения + текстовое описание одним архивом.
 
@@ -37,7 +37,7 @@ components/
   Toast.jsx                  — всплывающие уведомления об ошибках
 lib/
   groq.js                   — клиент Groq
-  gemini.js                 — клиент Google GenAI (Imagen)
+  gemini.js                 — клиент Google GenAI (Nano Banana / interactions)
   scrape.js                 — логика парсинга страниц через cheerio
   models.js                 — список Groq-моделей и движков генерации изображений
 ```
@@ -53,7 +53,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
 
 - `GROQ_API_KEY` — ключ с [console.groq.com](https://console.groq.com/keys).
 - `GEMINI_API_KEY` — ключ Google AI Studio / Gemini API (может иметь префикс `AQ.` или классический формат `AIzaSy...`, в зависимости от способа выпуска).
-- `GEMINI_API_KEY` нужен только для движка **Google Imagen 3** — движок **FLUX (Pollinations AI)** работает без ключей.
+- `GEMINI_API_KEY` нужен только для движка **Google Nano Banana** — движок **FLUX (Pollinations AI)** работает без ключей.
 
 На Vercel добавьте те же переменные в **Project Settings → Environment Variables**.
 
@@ -92,7 +92,7 @@ npm run dev
 1. Groq (`openai/gpt-oss-20b`, `temperature: 0`, JSON-режим) классифицирует запрос и возвращает `{ isImage, imagePromptEnglish }`.
 2. **`isImage === true`** → генерация изображения выбранным движком:
    - `pollinations_flux` (по умолчанию) — прямая ссылка на `image.pollinations.ai` со случайным `seed`, без внешних API-ключей. Ответ: `{ type: "generated_image", engine: "flux", text, imageUrl }`.
-   - `google_imagen` — вызов `ai.models.generateImages` (`imagen-3.0-generate-002`, 1:1). Ответ: `{ type: "generated_image", engine: "imagen3", text, imageUrl }` (`imageUrl` — base64 Data URL).
+   - `google_imagen` — вызов `ai.interactions.create` с моделью `gemini-2.5-flash-image` ("Nano Banana", `response_format: { type: "image", aspect_ratio: "1:1", delivery: "inline" }`). Ответ: `{ type: "generated_image", engine: "imagen3", text, imageUrl }` (`imageUrl` — base64 Data URL, взят из `interaction.output_image.data` / `.mime_type`).
 3. **`isImage === false`** → ответ Groq с выбранной `textModel` → `{ type: "text", text }`.
 
 ### `POST /api/download-zip`
@@ -125,4 +125,5 @@ npm run dev
 
 - Убедитесь, что названия моделей Groq (`lib/models.js`) актуальны на момент использования — список моделей Groq периодически обновляется/устаревает, сверяйтесь с [console.groq.com/docs/models](https://console.groq.com/docs/models).
 - Парсинг страниц ограничен: некоторые сайты блокируют серверные запросы (Cloudflare, антибот-защита) — в этом случае API вернёт ошибку с HTTP-статусом исходного запроса.
-- FLUX-изображения (Pollinations AI) генерируются на стороннем бесплатном сервисе без SLA — при недоступности сервиса переключитесь на движок Google Imagen 3.
+- FLUX-изображения (Pollinations AI) генерируются на стороннем бесплатном сервисе без SLA — при недоступности сервиса переключитесь на движок Google Nano Banana.
+- Классическая линейка Imagen (`ai.models.generateImages`, модели `imagen-3.0-*` / `imagen-4.0-*`) на момент написания **отключена** на Gemini Developer API — актуальный способ генерации изображений через Gemini — модели "Nano Banana" (`gemini-2.5-flash-image`, `gemini-3.1-flash-image` и др.) через `ai.interactions.create`. Если Google снова изменит API — проверьте [ai.google.dev/gemini-api/docs/image-generation](https://ai.google.dev/gemini-api/docs/image-generation) и обновите `IMAGE_MODEL` в `lib/models.js`.

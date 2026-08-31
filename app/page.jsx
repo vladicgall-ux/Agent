@@ -68,7 +68,7 @@ export default function Home() {
           </div>
           <div>
             <h1 className="text-base font-semibold text-zinc-50">AI Agent</h1>
-            <p className="text-xs text-zinc-500">Groq · FLUX / Google Imagen · Веб-парсинг</p>
+            <p className="text-xs text-zinc-500">Groq · FLUX / Nano Banana · Веб-парсинг</p>
           </div>
         </div>
       </header>

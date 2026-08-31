@@ -10,7 +10,7 @@ import ImageGallery from "./ImageGallery";
 
 const ENGINE_LABELS = {
   flux: "FLUX (Pollinations AI)",
-  imagen3: "Google Imagen 3",
+  imagen3: "Google Nano Banana (Gemini 2.5 Flash Image)",
 };
 
 function TextResult({ text, showCopy = true }) {

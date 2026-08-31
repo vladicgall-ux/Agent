@@ -114,23 +114,25 @@ async function handleFluxGeneration(imagePromptEnglish) {
 async function handleImagenGeneration(imagePromptEnglish) {
   const gemini = getGeminiClient();
 
-  const response = await gemini.models.generateImages({
+  const interaction = await gemini.interactions.create({
     model: IMAGE_MODEL,
-    prompt: imagePromptEnglish,
-    config: {
-      numberOfImages: 1,
-      aspectRatio: "1:1",
+    input: imagePromptEnglish,
+    response_format: {
+      type: "image",
+      mime_type: "image/jpeg",
+      aspect_ratio: "1:1",
+      delivery: "inline",
     },
   });
 
-  const generated = response?.generatedImages?.[0];
-  const base64 = generated?.image?.imageBytes;
+  const outputImage = interaction?.output_image;
 
-  if (!base64) {
-    throw new Error("Google Imagen не вернул изображение.");
+  if (!outputImage?.data) {
+    throw new Error("Gemini (Nano Banana) не вернул изображение.");
   }
 
-  const imageUrl = `data:image/jpeg;base64,${base64}`;
+  const mimeType = outputImage.mime_type || "image/jpeg";
+  const imageUrl = `data:${mimeType};base64,${outputImage.data}`;
 
   return NextResponse.json({
     type: "generated_image",
