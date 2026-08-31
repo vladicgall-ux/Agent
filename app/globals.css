@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-zinc-950 text-zinc-100;
+}
+
+::selection {
+  @apply bg-brand-500/40;
+}
+
+/* Thin scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-zinc-700 rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-zinc-600;
+}
+
+.prose-agent {
+  @apply text-zinc-200 leading-relaxed;
+}
+.prose-agent p {
+  @apply mb-3;
+}
+.prose-agent h1,
+.prose-agent h2,
+.prose-agent h3 {
+  @apply font-semibold text-zinc-50 mt-4 mb-2;
+}
+.prose-agent ul {
+  @apply list-disc list-inside mb-3 space-y-1;
+}
+.prose-agent ol {
+  @apply list-decimal list-inside mb-3 space-y-1;
+}
+.prose-agent code {
+  @apply bg-zinc-800 text-brand-100 px-1.5 py-0.5 rounded text-sm;
+}
+.prose-agent pre {
+  @apply bg-zinc-900 border border-zinc-800 rounded-lg p-3 overflow-x-auto mb-3;
+}
+.prose-agent pre code {
+  @apply bg-transparent p-0;
+}
+.prose-agent a {
+  @apply text-brand-400 underline underline-offset-2 hover:text-brand-300;
+}
+.prose-agent blockquote {
+  @apply border-l-2 border-brand-500 pl-3 italic text-zinc-400;
+}
