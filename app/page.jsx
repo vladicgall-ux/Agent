@@ -3,13 +3,14 @@
 import { useState } from "react";
 import {
   Bot,
+  Image as ImageIcon,
   Link as LinkIcon,
   Loader2,
   Send,
   Sparkles,
   X,
 } from "lucide-react";
-import { GROQ_MODELS, DEFAULT_MODEL } from "@/lib/models";
+import { GROQ_MODELS, DEFAULT_MODEL, IMAGE_ENGINES, DEFAULT_IMAGE_ENGINE } from "@/lib/models";
 import ResultView from "@/components/ResultView";
 import Skeleton from "@/components/Skeleton";
 import Toast from "@/components/Toast";
@@ -18,7 +19,8 @@ export default function Home() {
   const [prompt, setPrompt] = useState("");
   const [url, setUrl] = useState("");
   const [showUrlField, setShowUrlField] = useState(false);
-  const [model, setModel] = useState(DEFAULT_MODEL);
+  const [textModel, setTextModel] = useState(DEFAULT_MODEL);
+  const [imageEngine, setImageEngine] = useState(DEFAULT_IMAGE_ENGINE);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
@@ -38,7 +40,8 @@ export default function Home() {
         body: JSON.stringify({
           prompt: prompt.trim(),
           url: showUrlField ? url.trim() : undefined,
-          model,
+          textModel,
+          imageEngine,
         }),
       });
 
@@ -65,7 +68,7 @@ export default function Home() {
           </div>
           <div>
             <h1 className="text-base font-semibold text-zinc-50">AI Agent</h1>
-            <p className="text-xs text-zinc-500">Groq · Google Imagen · Веб-парсинг</p>
+            <p className="text-xs text-zinc-500">Groq · FLUX / Google Imagen · Веб-парсинг</p>
           </div>
         </div>
       </header>
@@ -121,8 +124,9 @@ export default function Home() {
               )}
 
               <select
-                value={model}
-                onChange={(e) => setModel(e.target.value)}
+                value={textModel}
+                onChange={(e) => setTextModel(e.target.value)}
+                title="Текстовая модель Groq"
                 className="rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-xs text-zinc-300 outline-none focus:border-brand-500 transition-colors"
               >
                 {GROQ_MODELS.map((m) => (
@@ -131,6 +135,22 @@ export default function Home() {
                   </option>
                 ))}
               </select>
+
+              <div className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900 px-2 py-1.5">
+                <ImageIcon className="h-3.5 w-3.5 text-zinc-500 ml-0.5" />
+                <select
+                  value={imageEngine}
+                  onChange={(e) => setImageEngine(e.target.value)}
+                  title="Движок генерации изображений"
+                  className="bg-transparent text-xs text-zinc-300 outline-none"
+                >
+                  {IMAGE_ENGINES.map((eng) => (
+                    <option key={eng.id} value={eng.id} className="bg-zinc-900">
+                      {eng.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <button

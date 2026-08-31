@@ -1,38 +1,51 @@
 "use client";
 
-import { Download, Link as LinkIcon, Sparkles } from "lucide-react";
+import { Link as LinkIcon, Sparkles, Wand2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import CopyButton from "./CopyButton";
+import DownloadImageButton from "./DownloadImageButton";
 import ImageGallery from "./ImageGallery";
 
-function TextResult({ text }) {
+const ENGINE_LABELS = {
+  flux: "FLUX (Pollinations AI)",
+  imagen3: "Google Imagen 3",
+};
+
+function TextResult({ text, showCopy = true }) {
   return (
-    <div className="prose-agent">
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
+    <div className="space-y-3">
+      {showCopy && (
+        <div className="flex justify-end">
+          <CopyButton text={text} />
+        </div>
+      )}
+      <div className="prose-agent">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
+      </div>
     </div>
   );
 }
 
-function GeneratedImageResult({ text, imageUrl }) {
+function GeneratedImageResult({ text, imageUrl, engine }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 text-sm text-brand-300">
         <Sparkles className="h-4 w-4" />
         Сгенерированное изображение
+        {engine && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-zinc-800 px-2 py-0.5 text-xs text-zinc-400">
+            <Wand2 className="h-3 w-3" />
+            {ENGINE_LABELS[engine] || engine}
+          </span>
+        )}
       </div>
       <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={imageUrl} alt={text} className="w-full max-w-xl mx-auto" />
       </div>
       <p className="text-sm text-zinc-400 italic">{text}</p>
-      <a
-        href={imageUrl}
-        download="generated-image.jpg"
-        className="inline-flex items-center gap-2 rounded-lg bg-brand-600 hover:bg-brand-500 transition-colors px-4 py-2 text-sm font-medium text-white"
-      >
-        <Download className="h-4 w-4" />
-        Скачать изображение
-      </a>
+      <DownloadImageButton imageUrl={imageUrl} filename={`${engine || "generated"}-image.jpg`} />
     </div>
   );
 }
@@ -68,7 +81,9 @@ export default function ResultView({ result }) {
   if (!result) return null;
 
   if (result.type === "generated_image") {
-    return <GeneratedImageResult text={result.text} imageUrl={result.imageUrl} />;
+    return (
+      <GeneratedImageResult text={result.text} imageUrl={result.imageUrl} engine={result.engine} />
+    );
   }
 
   if (result.type === "parsed_page") {
