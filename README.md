@@ -5,6 +5,7 @@
 1. **Текстовые ответы** — через Groq API (выбор из нескольких моделей).
 2. **Генерация изображений** — автоматическое определение намерения пользователя, с выбором движка: **FLUX (Pollinations AI, бесплатно, без ключа)** или **Google Imagen 3** через `@google/genai`.
 3. **Анализ веб-страниц** — парсинг HTML-страницы по ссылке (`cheerio`), извлечение текста и фотографий, и ответ модели на основе содержимого страницы.
+4. **Пакетная выгрузка в ZIP** — для результата парсинга страницы можно скачать все найденные изображения + текстовое описание одним архивом.
 
 ## Стек
 
@@ -15,12 +16,14 @@
 - @google/genai
 - cheerio
 - react-markdown + remark-gfm (рендер markdown-ответов)
+- jszip (сборка ZIP-архива с изображениями на сервере)
 
 ## Структура проекта
 
 ```
 app/
-  api/agent/route.js       — единственный backend-эндпоинт (POST /api/agent)
+  api/agent/route.js       — основной backend-эндпоинт (POST /api/agent)
+  api/download-zip/route.js — сборка ZIP-архива из изображений страницы (POST /api/download-zip)
   layout.js                — корневой layout
   page.jsx                 — главный UI
   globals.css               — стили Tailwind + типографика
@@ -29,6 +32,7 @@ components/
   ResultView.jsx            — рендер результата (текст / картинка / страница)
   CopyButton.jsx             — кнопка копирования текстового ответа
   DownloadImageButton.jsx    — кнопка скачивания сгенерированного изображения (через blob)
+  DownloadZipButton.jsx      — кнопка скачивания всех изображений страницы + описания в ZIP
   Skeleton.jsx               — индикатор загрузки
   Toast.jsx                  — всплывающие уведомления об ошибках
 lib/
@@ -90,6 +94,25 @@ npm run dev
    - `pollinations_flux` (по умолчанию) — прямая ссылка на `image.pollinations.ai` со случайным `seed`, без внешних API-ключей. Ответ: `{ type: "generated_image", engine: "flux", text, imageUrl }`.
    - `google_imagen` — вызов `ai.models.generateImages` (`imagen-3.0-generate-002`, 1:1). Ответ: `{ type: "generated_image", engine: "imagen3", text, imageUrl }` (`imageUrl` — base64 Data URL).
 3. **`isImage === false`** → ответ Groq с выбранной `textModel` → `{ type: "text", text }`.
+
+### `POST /api/download-zip`
+
+Собирает ZIP-архив на сервере из результата парсинга страницы. Тело запроса:
+
+```json
+{
+  "images": ["https://.../1.jpg", "https://.../2.jpg"],
+  "text": "текстовое описание (опционально, попадёт в описание.txt)",
+  "sourceUrl": "https://example.com (опционально)"
+}
+```
+
+1. Каждое изображение скачивается сервером (с `User-Agent` браузера, таймаут 15 сек на файл, максимум 12 изображений).
+2. Успешно скачанные файлы кладутся в папку `images/` внутри архива (`image-01.jpg`, `image-02.png`, ...), формат определяется по `Content-Type` или расширению в URL.
+3. Если переданы `text`/`sourceUrl` — в архив добавляется `описание.txt`.
+4. Ответ — бинарный `application/zip` (`Content-Disposition: attachment; filename="package.zip"`). Если не удалось скачать ни одного изображения — JSON `{ error }` со статусом 502.
+
+Кнопка «Скачать всё в ZIP» появляется в блоке результата парсинга страницы рядом с галереей изображений.
 
 ## Деплой на Vercel
 

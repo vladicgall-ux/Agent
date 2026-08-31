@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import CopyButton from "./CopyButton";
 import DownloadImageButton from "./DownloadImageButton";
+import DownloadZipButton from "./DownloadZipButton";
 import ImageGallery from "./ImageGallery";
 
 const ENGINE_LABELS = {
@@ -66,10 +67,13 @@ function ParsedPageResult({ text, images, sourceUrl }) {
       </div>
       <TextResult text={text} />
       {images && images.length > 0 && (
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-zinc-300">
-            Изображения со страницы ({images.length})
-          </h3>
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-sm font-semibold text-zinc-300">
+              Изображения со страницы ({images.length})
+            </h3>
+            <DownloadZipButton images={images} text={text} sourceUrl={sourceUrl} />
+          </div>
           <ImageGallery images={images} />
         </div>
       )}
